@@ -58,7 +58,6 @@ export const App = () => {
         setLoading(false);
       }
     }
-
     getImagesGallery();
   }, [query, page]);
 
