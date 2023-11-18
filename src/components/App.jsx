@@ -13,13 +13,12 @@ export const App = () => {
   const [page, setPage] = useState(1);
   const [galleryItems, setGalleryItems] = useState([]);
   const [loadMore, setLoadMore] = useState(0);
-  const [totalHits, setTotalHits] = useState(0);
-  const [perPage, setPerPage] = useState(12);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     async function getImagesGallery() {
+      const perPage = 12;
       if (query === '') {
         return;
       }
@@ -34,20 +33,22 @@ export const App = () => {
           ...prevGalleryItems,
           ...images.hits,
         ]);
-        setTotalHits(images.totalHits);
-        setLoadMore(page < images.totalHits / perPage);
 
-        if (page === 1 && images.totalHits !== 0) {
-          toast.success(`'Hooray! We found ${images.totalHits} images.'`);
+        const totalHits = images.totalHits;
+        
+        setLoadMore(page < totalHits / perPage);
+
+        if (page === 1 && totalHits !== 0) {
+          toast.success(`'Hooray! We found ${totalHits} images.'`);
         }
 
-        if (page >= images.totalHits / perPage ) {
+        if (page >= totalHits / perPage ) {
           toast.success(
             `'We're sorry, but you've reached the end of search results.'`
           );
         }
 
-        if (images.totalHits === 0) {
+        if (totalHits === 0) {
           toast.success(
             'Sorry, there are no images matching your search query. Please try again.'
           );
