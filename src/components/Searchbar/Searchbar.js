@@ -22,6 +22,7 @@ export const Searhbar = ({ onSubmit }) => {
       toast.success('Please fill out the search field');
       return;
     }
+    
     onSubmit(query);
   };
 
