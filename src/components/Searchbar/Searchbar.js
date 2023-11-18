@@ -12,7 +12,7 @@ export const Searhbar = ({ onSubmit }) => {
   const [query, setQuery] = useState('');
 
   const handleSearchQuery = evt => {
-    setQuery(evt.target.value.toLowerCase().trim());
+    setQuery(evt.target.value.toLowerCase());
   };
 
   const handleSubmit = evt => {

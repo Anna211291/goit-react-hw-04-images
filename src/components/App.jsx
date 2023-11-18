@@ -41,7 +41,7 @@ export const App = () => {
           toast.success(`'Hooray! We found ${images.totalHits} images.'`);
         }
 
-        if (page >= images.totalHits / perPage) {
+        if (page >= images.totalHits / perPage ) {
           toast.success(
             `'We're sorry, but you've reached the end of search results.'`
           );
