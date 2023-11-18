@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Loader } from './Loader/Loader';
 import { getImages } from 'api';
@@ -8,38 +8,43 @@ import { LoadMoreBtn } from './Button/Button';
 import { ErrorMessage } from './ErrorMessage';
 import { Layout } from './Layout';
 
-export class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    galleryItems: [],
-    loadMore: 0,
-    totalHits: 0,
-    perPage: 12,
-    loading: false,
-    error: false,
-  };
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [loadMore, setLoadMore] = useState(0);
+  const [totalHits, setTotalHits] = useState(0);
+  const [perPage, setPerPage] = useState(12);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
+  useEffect(() => {
+    async function getImagesGallery() {
+      if (query === '') {
+        return;
+      }
 
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
       try {
-        this.setState({ loading: true, error: false });
+        setLoading(true);
+        setError(false);
 
         const images = await getImages(query, page);
 
-        this.setState(prevState => ({
-          galleryItems: [...prevState.galleryItems, ...images.hits],
-          totalHits: images.totalHits,
-          loadMore: page < images.totalHits / this.state.perPage,
-        }));
+        setGalleryItems(prevGalleryItems => [
+          ...prevGalleryItems,
+          ...images.hits,
+        ]);
+        setTotalHits(images.totalHits);
+        setLoadMore(page < images.totalHits / perPage);
 
         if (page === 1 && images.totalHits !== 0) {
           toast.success(`'Hooray! We found ${images.totalHits} images.'`);
+        }
+
+        if (page >= images.totalHits / perPage) {
+          toast.success(
+            `'We're sorry, but you've reached the end of search results.'`
+          );
         }
 
         if (images.totalHits === 0) {
@@ -48,43 +53,36 @@ export class App extends Component {
           );
         }
       } catch (error) {
-        this.setState({ error: true });
+        setError(true);
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
     }
-  }
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+    getImagesGallery();
+  }, [query, page]);
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  onSubmit = query => {
-    this.setState({
-      query: query,
-      page: 1,
-      galleryItems: [],
-    });
+  const onSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setGalleryItems([]);
   };
 
-  render() {
-    const { loading, loadMore, error } = this.state;
-    return (
-      <Layout>
-        <Searhbar onSubmit={this.onSubmit} />
-        <Toaster position="top-right" />
-        {loading && <Loader />}
-        {error && (
-          <ErrorMessage>Whoops! Error! Please reload this page!</ErrorMessage>
-        )}
-        {this.state.galleryItems.length > 0 && (
-          <ImageGallery images={this.state.galleryItems} />
-        )}
+  return (
+    <Layout>
+      <Searhbar onSubmit={onSubmit} />
+      <Toaster position="top-right" />
+      {loading && <Loader />}
+      {error && (
+        <ErrorMessage>Whoops! Error! Please reload this page!</ErrorMessage>
+      )}
+      {galleryItems.length > 0 && <ImageGallery images={galleryItems} />}
 
-        {loadMore > 0 && <LoadMoreBtn handleLoadMore={this.handleLoadMore} />}
-      </Layout>
-    );
-  }
-}
+      {loadMore > 0 && <LoadMoreBtn handleLoadMore={handleLoadMore} />}
+    </Layout>
+  );
+};
